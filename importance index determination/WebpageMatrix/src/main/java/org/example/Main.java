@@ -19,17 +19,19 @@ import java.io.IOException;
 import java.util.HashSet;
 
 public class Main {
+    static String beginPage="https://www.fer.unizg.hr";
     public static void main(String args[]) throws IOException {
 
-        int maxDepth = 2;
+        int maxDepth = 3;
         int currentDepth = 0;
         int totalExpanded=0;
 
         HashSet<String> visited = new HashSet<>();
         LinkedHashSet<String> toBeVisited = new LinkedHashSet<>();
         HashMap<String,HashSet<String>> children=new HashMap<>();
+        HashMap<String,HashSet<String>> parents=new HashMap<>();
 
-        toBeVisited.add("https://www.fer.unizg.hr");
+        toBeVisited.add(simplify(beginPage));
         toBeVisited.add("ROWBREAK");
         //download("https://www.fer.unizg.hr/");
         while(!toBeVisited.isEmpty())
@@ -54,6 +56,11 @@ public class Main {
 
             visited.add(currentWebPage);
             children.put(currentWebPage, findLinks(currentWebPage));
+            for(String child : children.get(currentWebPage))
+            {
+                parents.putIfAbsent(child,new HashSet<>());
+                parents.get(child).add(currentWebPage);
+            }
             toBeVisited.addAll(children.get(currentWebPage));
             totalExpanded++;
             toBeVisited.remove(currentWebPage);
@@ -62,7 +69,7 @@ public class Main {
 
         }
         System.out.println("gotov");
-        HashSet<String>allWebPages=new HashSet<>();
+        SortedSet<String>allWebPages=new TreeSet<>();
         allWebPages.addAll(visited);
         allWebPages.addAll(toBeVisited);
     }
@@ -83,16 +90,22 @@ public class Main {
 
         Elements elements = doc.select("a[href]");
         for (Element element : elements) {
-            links.add(element.attr("href"));
+
+                links.add(element.attr("href"));
+
         }
         links.forEach(x->{
                         if (x.startsWith("/"))
                             {
-                                tempLinks.add(simplify(getCore(url)+x));
+                                String s=simplify(getCore(url)+x);
+                                if(s!=null)
+                                    tempLinks.add(s);
                             }
                             else if(x.startsWith("http"))
                             {
-                                tempLinks.add(simplify(x));
+                                String s=simplify(x);
+                                if(s!=null)
+                                  tempLinks.add(s);
                             }
                          });
 
@@ -125,6 +138,7 @@ public class Main {
     }
 
     private static String simplify(String maybeLonger) {
+        maybeLonger=maybeLonger.split(" ")[0];
         for(int i=maybeLonger.length()-1;i>=0;i--)
         {
             if(maybeLonger.charAt(i)=='/' ||maybeLonger.charAt(i)=='\\')
@@ -136,7 +150,8 @@ public class Main {
                 break;
             }
         }
-        return maybeLonger;
-
+        if((maybeLonger.contains("fer") || maybeLonger.contains("FER") || maybeLonger.contains("Fer") || maybeLonger.equals("ROWBREAK")))
+            return maybeLonger;
+        return null;
     }
 }
