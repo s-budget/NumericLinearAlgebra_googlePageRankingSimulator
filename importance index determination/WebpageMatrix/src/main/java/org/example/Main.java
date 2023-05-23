@@ -1,9 +1,5 @@
 package org.example;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,7 +15,7 @@ import java.io.IOException;
 import java.util.HashSet;
 
 public class Main {
-    static String beginPage="https://www.fer.unizg.hr";
+    static String beginPage="https://solo-leveling.fandom.com";
     public static void main(String args[]) throws IOException {
 
         int maxDepth = 3;
@@ -54,6 +50,7 @@ public class Main {
                 continue;
             }
 
+
             visited.add(currentWebPage);
             children.put(currentWebPage, findLinks(currentWebPage));
             for(String child : children.get(currentWebPage))
@@ -64,14 +61,47 @@ public class Main {
             toBeVisited.addAll(children.get(currentWebPage));
             totalExpanded++;
             toBeVisited.remove(currentWebPage);
-            System.out.println("at detpth : "+currentDepth+" in total:  "+totalExpanded+"     "+currentWebPage);
+            //System.out.println("at detpth : "+currentDepth+" in total:  "+totalExpanded+"     "+currentWebPage);
 
 
         }
-        System.out.println("gotov");
+        System.out.println("pronasao Stranice");
+        while(!toBeVisited.isEmpty())
+        {
+            Optional<String> currentWebPageFound = toBeVisited.stream().findFirst();
+            String currentWebPage= simplify(currentWebPageFound.get());
+            if(currentWebPage.equals("ROWBREAK"))
+            {
+                break;
+            }
+            if(visited.contains(currentWebPage))
+            {
+                toBeVisited.remove(currentWebPage);
+                continue;
+            }
+
+            visited.add(currentWebPage);
+            HashSet<String>alreadyFoundChildren= findLinks(currentWebPage);
+            alreadyFoundChildren.removeIf(x->!visited.contains(x)&&!toBeVisited.contains(x));
+            children.put(currentWebPage, alreadyFoundChildren);
+            for(String child : children.get(currentWebPage))
+            {
+                parents.putIfAbsent(child,new HashSet<>());
+                parents.get(child).add(currentWebPage);
+            }
+            totalExpanded++;
+            toBeVisited.remove(currentWebPage);
+            //System.out.println("at detpth : "+currentDepth+" in total:  "+totalExpanded+"     "+currentWebPage);
+
+
+        }
+        System.out.println("zagaldio dangling nodes");
         SortedSet<String>allWebPages=new TreeSet<>();
         allWebPages.addAll(visited);
         allWebPages.addAll(toBeVisited);
+        hashMapeSpodacima podaci=new hashMapeSpodacima(children,parents);
+        podaci.saveState();
+        System.out.println("Spremio odnose");
     }
 
 
@@ -108,7 +138,7 @@ public class Main {
                                   tempLinks.add(s);
                             }
                          });
-
+        tempLinks.removeIf(x->x.equals(url));
         return tempLinks;
         }
         catch (Throwable e)
@@ -150,8 +180,26 @@ public class Main {
                 break;
             }
         }
-        if((maybeLonger.contains("fer") || maybeLonger.contains("FER") || maybeLonger.contains("Fer") || maybeLonger.equals("ROWBREAK")))
+        if (maybeLonger.contains("Special:UserRights/"))
+        {
+            maybeLonger=maybeLonger.split("Special:UserRights")[0]+"Special:UserRights";
+        }
+        if(maybeLonger.contains("/r/"))
+        {
+            maybeLonger=maybeLonger.split("/r/")[0];
+        }
+       if(maybeLonger.contains("/Message_Wall:"))
+       {
+           maybeLonger=maybeLonger.replace("/Message_Wall:","/User:");
+       }
+        if(maybeLonger.contains("Special:Contributions/"))
+        {
+            maybeLonger=maybeLonger.replace("Special:Contributions/","User:");
+        }
+
+        if((maybeLonger.contains("solo-leveling.fandom")|| maybeLonger.equals("ROWBREAK")) && !maybeLonger.contains("Special:Log/")&& !maybeLonger.contains("?")&& !maybeLonger.contains("User_blog:")&& !maybeLonger.contains("@comment")&& !maybeLonger.contains("File:")&& !maybeLonger.contains("Special:Search") && !maybeLonger.contains("Special:UserProfileActivity") )
             return maybeLonger;
         return null;
     }
 }
+
