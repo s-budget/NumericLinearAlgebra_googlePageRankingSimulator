@@ -28,6 +28,23 @@ public class MatrixBuilder
             }
 
         }
+        for(String linkChild :sortedWebPages)
+        {
+            StringBuilder line= new StringBuilder();
+            for(String linkParent :sortedWebPages)
+            {
+                if(!podaci.getChildren().get(linkParent).contains(linkChild))
+                {
+                    line.append("0,");
+                }
+                else
+                {
+                    line.append(String.format("%.5f", 1f / podaci.getChildren().get(linkParent).size())).append(",");
+                }
+            }
+            line = new StringBuilder(line.substring(0, line.length() - 1));
+            System.out.println(line);
+        }
         System.setOut(console);
         System.out.println(
                 "Matrix generated");

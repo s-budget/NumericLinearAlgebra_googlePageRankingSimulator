@@ -169,6 +169,11 @@ public class Main {
 
     private static String simplify(String maybeLonger) {
         maybeLonger=maybeLonger.split(" ")[0];
+        String[] s=maybeLonger.split("//");
+        StringBuilder maybeLongerBuilder = new StringBuilder(s[0] + "//");
+        for(int i = 1; i<s.length; i++)
+            maybeLongerBuilder.append(s[i]);
+        maybeLonger = maybeLongerBuilder.toString();
         for(int i=maybeLonger.length()-1;i>=0;i--)
         {
             if(maybeLonger.charAt(i)=='/' ||maybeLonger.charAt(i)=='\\')
@@ -180,6 +185,7 @@ public class Main {
                 break;
             }
         }
+
         if (maybeLonger.contains("Special:UserRights/"))
         {
             maybeLonger=maybeLonger.split("Special:UserRights")[0]+"Special:UserRights";
