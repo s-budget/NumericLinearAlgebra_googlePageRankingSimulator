@@ -15,12 +15,16 @@ import java.io.IOException;
 import java.util.HashSet;
 
 public class Main {
+
+
     static String beginPage="https://solo-leveling.fandom.com";
     public static void main(String args[]) throws IOException {
 
         int maxDepth = 3;
         int currentDepth = 0;
         int totalExpanded=0;
+
+
 
         HashSet<String> visited = new HashSet<>();
         LinkedHashSet<String> toBeVisited = new LinkedHashSet<>();
@@ -34,6 +38,9 @@ public class Main {
         {
             Optional<String> currentWebPageFound = toBeVisited.stream().findFirst();
             String currentWebPage= simplify(currentWebPageFound.get());
+            if (currentWebPage != null && currentWebPage.equals("http://solo-leveling.fandom.com/wiki/Lee_Seong-Chul")) {
+                System.out.println("found");
+            }
             if(currentWebPage.equals("ROWBREAK"))
             {
                 currentDepth ++;
@@ -52,7 +59,13 @@ public class Main {
 
 
             visited.add(currentWebPage);
-            children.put(currentWebPage, findLinks(currentWebPage));
+            HashSet<String>alreadyFoundChildren= findLinks(currentWebPage);
+            if(alreadyFoundChildren.size()==0 && currentWebPage.contains("http:"))
+            {
+                alreadyFoundChildren= findLinks(currentWebPage.replace("http:","https:"));
+            }
+
+            children.put(currentWebPage, alreadyFoundChildren);
             for(String child : children.get(currentWebPage))
             {
                 parents.putIfAbsent(child,new HashSet<>());
@@ -105,9 +118,8 @@ public class Main {
     }
 
 
-    private static HashSet<String> findLinks(String url) throws IOException {
+    static HashSet<String> findLinks(String url) throws IOException {
         try{
-
         HashSet<String> links = new HashSet<>();
         HashSet<String> tempLinks = new HashSet<>();
 
@@ -168,7 +180,8 @@ public class Main {
     }
 
     private static String simplify(String maybeLonger) {
-        maybeLonger=maybeLonger.split(" ")[0];
+        if(!maybeLonger.contains("/f/t/") && !maybeLonger.contains("iki/Sung Suho"))
+            maybeLonger=maybeLonger.split(" ")[0];
         String[] s=maybeLonger.split("//");
         StringBuilder maybeLongerBuilder = new StringBuilder(s[0] + "//");
         for(int i = 1; i<s.length; i++)
@@ -202,8 +215,16 @@ public class Main {
         {
             maybeLonger=maybeLonger.replace("Special:Contributions/","User:");
         }
+        if(maybeLonger.contains(".fandom.comc"))
+        {
+            maybeLonger=maybeLonger.replace(".fandom.comc",".fandom.com/c");
+        }
+        if(maybeLonger.contains(".fandom.coms"))
+        {
+            maybeLonger=beginPage;
+        }
 
-        if((maybeLonger.contains("solo-leveling.fandom")|| maybeLonger.equals("ROWBREAK")) && !maybeLonger.contains("Special:Log/")&& !maybeLonger.contains("?")&& !maybeLonger.contains("User_blog:")&& !maybeLonger.contains("@comment")&& !maybeLonger.contains("File:")&& !maybeLonger.contains("Special:Search") && !maybeLonger.contains("Special:UserProfileActivity") )
+        if((maybeLonger.contains("solo-leveling.fandom")|| maybeLonger.equals("ROWBREAK")) && !maybeLonger.contains("Special:Log/")&& !maybeLonger.contains("/community.fandom.com")&& !maybeLonger.contains("testcases")&& !maybeLonger.contains("?")&& !maybeLonger.contains("User_blog:")&& !maybeLonger.contains("@comment")&& !maybeLonger.contains("File:")&& !maybeLonger.contains("Special:Search") && !maybeLonger.contains("Special:UserProfileActivity") )
             return maybeLonger;
         return null;
     }

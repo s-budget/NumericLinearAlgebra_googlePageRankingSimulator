@@ -3,17 +3,19 @@ package org.example;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static org.example.Main.findLinks;
 
 public class MatrixBuilder
 {
     public static void main(String... args) throws IOException, ClassNotFoundException {
         hashMapeSpodacima podaci=new hashMapeSpodacima(null,null);
+
         podaci.loadState();
-        System.out.println("bob");
-        SortedSet<String> sortedWebPages=new TreeSet<>();
-        sortedWebPages.addAll(podaci.getChildren().keySet());
+        SortedSet<String> sortedWebPages = new TreeSet<>(podaci.getChildren().keySet());
 
         PrintStream o = new PrintStream(new File("Matrix.txt"));
         PrintStream console = System.out;
@@ -27,10 +29,13 @@ public class MatrixBuilder
                 System.out.print(link+ ",");
             }
 
+
         }
+
         for(String linkChild :sortedWebPages)
         {
             StringBuilder line= new StringBuilder();
+            int i=0;
             for(String linkParent :sortedWebPages)
             {
                 if(!podaci.getChildren().get(linkParent).contains(linkChild))
@@ -38,10 +43,22 @@ public class MatrixBuilder
                     line.append("0,");
                 }
                 else
-                {
+                { i=1;
                     line.append(String.format("%.5f", 1f / podaci.getChildren().get(linkParent).size())).append(",");
                 }
             }
+            //Dangling node aproximation
+//            if(podaci.getChildren().get(linkChild).size()==0)
+//            {System.setOut(console);
+//                HashSet<String> bbb=findLinks(linkChild);
+//                System.out.println(linkChild+" children");
+//                System.setOut(o);
+//            }
+//            if(podaci.getParents().get(linkChild).size()==0)
+//            {System.setOut(console);
+//                System.out.println(linkChild+" parents");
+//                System.setOut(o);
+//            }
             line = new StringBuilder(line.substring(0, line.length() - 1));
             System.out.println(line);
         }
