@@ -12,6 +12,9 @@ import static org.example.Main.findLinks;
 public class MatrixBuilder
 {
     public static void main(String... args) throws IOException, ClassNotFoundException {
+
+        double m=0.15;
+
         hashMapeSpodacima podaci=new hashMapeSpodacima(null,null);
 
         podaci.loadState();
@@ -40,11 +43,11 @@ public class MatrixBuilder
             {
                 if(!podaci.getChildren().get(linkParent).contains(linkChild))
                 {
-                    line.append("0,");
+                    line.append(String.format("%.5f",m/podaci.getChildren().size())+",");
                 }
                 else
                 { i=1;
-                    line.append(String.format("%.5f", 1f / podaci.getChildren().get(linkParent).size())).append(",");
+                    line.append(String.format("%.5f", (1f / podaci.getChildren().get(linkParent).size())*(1d-m)+(m/podaci.getChildren().size()))).append(",");
                 }
             }
             //Dangling node aproximation
